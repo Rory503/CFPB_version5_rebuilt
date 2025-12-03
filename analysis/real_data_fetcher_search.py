@@ -14,9 +14,15 @@ from datetime import datetime, timedelta
 import requests
 import pandas as pd
 
+try:
+    from analysis.supabase_data_manager import SupabaseDataManager
+    SUPABASE_AVAILABLE = True
+except ImportError:
+    SUPABASE_AVAILABLE = False
+
 
 class SearchAPIRealDataFetcher:
-    def __init__(self, months=4, max_records=5000):
+    def __init__(self, months=4, max_records=5000, use_cache=True):
         base = os.environ.get(
             "CFPB_SEARCH_API_BASE",
             "https://www.consumerfinance.gov/data-research/consumer-complaints/search/api/v1/",
@@ -39,6 +45,17 @@ class SearchAPIRealDataFetcher:
         }
         self.data_dir = "data"
         os.makedirs(self.data_dir, exist_ok=True)
+        
+        # Initialize Supabase caching if credentials are available
+        self.use_cache = use_cache and SUPABASE_AVAILABLE
+        self.supabase_manager = None
+        if self.use_cache:
+            try:
+                self.supabase_manager = SupabaseDataManager()
+                print("✅ Supabase caching enabled")
+            except Exception as e:
+                print(f"⚠️  Supabase unavailable ({e}), using direct API mode")
+                self.use_cache = False
 
     def _page(self, size=1000):
         """Yield pages of results from the Search API, respecting API paging limits and max_records."""
@@ -78,8 +95,33 @@ class SearchAPIRealDataFetcher:
                 break
             frm += size
 
-    def load_and_filter_data(self):
-        """Load via Search API, normalize, filter, and cache. Memory-optimized."""
+    def load_and_filter_data(self, company=None):
+        """
+        Load via Search API or Supabase cache.
+        
+        Args:
+            company: Optional company filter for targeted loading
+        
+        Returns:
+            DataFrame with complaint data
+        """
+        # Try loading from Supabase cache first
+        if self.use_cache and self.supabase_manager:
+            print(f"\n💾 Checking Supabase cache...")
+            cached_df = self.supabase_manager.get_cached_complaints(
+                company=company,
+                start_date=self.start_date.strftime("%Y-%m-%d"),
+                end_date=self.end_date.strftime("%Y-%m-%d"),
+                limit=self.max_records
+            )
+            
+            if not cached_df.empty:
+                print(f"✅ Loaded {len(cached_df)} complaints from cache (instant!)")
+                return self._apply_filters(cached_df)
+            else:
+                print("⚠️  No cached data found, fetching from CFPB API...")
+        
+        # Fallback to API loading
         print(
             f"\n🏛️  Loading Real CFPB Complaint Data\n{'='*35}\nSearch API load (lite={self.lite_mode}, max={self.max_records}) window: {self.start_date:%Y-%m-%d}..{self.end_date:%Y-%m-%d}"
         )
@@ -139,6 +181,22 @@ class SearchAPIRealDataFetcher:
             df["Date sent to company"], errors="coerce"
         )
 
+        # Cache to Supabase in the background
+        if self.use_cache and self.supabase_manager and not df.empty:
+            try:
+                cached_count = self.supabase_manager.cache_complaints(df)
+                print(f"💾 Cached {cached_count} complaints to Supabase")
+            except Exception as e:
+                print(f"⚠️  Failed to cache to Supabase: {e}")
+
+        # Apply filters and return
+        return self._apply_filters(df)
+    
+    def _apply_filters(self, df):
+        """Apply common filters to DataFrame."""
+        if df.empty:
+            return df
+        
         # Filter window (defense-in-depth) and narrative presence only when not in lite mode
         mask = (df["Date received"] >= self.start_date) & (
             df["Date received"] <= self.end_date
