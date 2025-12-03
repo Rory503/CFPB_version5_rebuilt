@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: cfpb-consumer-complaints-dashboard
+    env: python
+    autoDeploy: true
+    plan: free
+    buildCommand: |
+      pip install --upgrade pip
+      pip install -r requirements.txt
+    startCommand: |
+      streamlit run web_dashboard.py --server.port $PORT --server.headless true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: LITE_MODE
+        value: "1"
+      - key: MONTHS_WINDOW
+        value: "4"
+    healthCheckPath: /
+    disk:
+      name: data-cache
+      mountPath: /opt/render/project/src/data
+      sizeGB: 2
+

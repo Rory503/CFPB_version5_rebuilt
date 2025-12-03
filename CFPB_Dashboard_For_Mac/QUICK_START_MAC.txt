@@ -1,0 +1,40 @@
+═══════════════════════════════════════════════════════════
+    CFPB DASHBOARD - MAC QUICK START (2 MINUTES)
+═══════════════════════════════════════════════════════════
+
+STEP 1: Open Terminal
+   Applications → Utilities → Terminal (black window opens)
+
+STEP 2: Copy-Paste This Command:
+   cd ~/Desktop/CFPB_Dashboard_For_Mac && chmod +x run_dashboard.sh && ./run_dashboard.sh
+
+   ⚠️ If folder is NOT on Desktop, change the path!
+
+STEP 3: Press Enter and Wait
+   - First run installs packages (1-2 minutes)
+   - Browser will open automatically
+   - Terminal shows progress messages
+
+═══════════════════════════════════════════════════════════
+
+WHAT TO EXPECT:
+
+✓ Security Warning about "unidentified developer"?
+  → System Preferences → Security → "Open Anyway"
+
+✓ Network connection warning?
+  → Click "Allow" (lets browser connect)
+
+✓ Terminal shows installation messages?
+  → Normal! Wait for "Starting CFPB Dashboard..."
+
+✓ Browser opens to localhost:8501?
+  → SUCCESS! Dashboard is running
+
+═══════════════════════════════════════════════════════════
+
+TO STOP: Press Ctrl+C in Terminal or close Terminal window
+
+NEXT TIME: Just run Step 2 again (much faster, no install)
+
+═══════════════════════════════════════════════════════════
