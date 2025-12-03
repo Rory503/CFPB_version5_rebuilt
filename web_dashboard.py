@@ -1617,7 +1617,7 @@ def prepare_data_context_for_ai(data, analyzer):
     return context
 
 def generate_ai_response(prompt, data_context, api_key, model):
-    """Generate AI response using OpenAI API"""
+    """Generate AI response using OpenAI Prompt Agent"""
     
     if not OPENAI_AVAILABLE:
         return "❌ OpenAI library not installed. Please install it with: pip install openai"
@@ -1629,39 +1629,43 @@ def generate_ai_response(prompt, data_context, api_key, model):
         # Set up OpenAI client
         client = openai.OpenAI(api_key=api_key)
         
-        # Create system prompt with data context
-        system_prompt = f"""
-        You are a CFPB complaint data analyst AI assistant. You have access to real complaint data from the Consumer Financial Protection Bureau.
+        # Prepare data context for the prompt
+        context_summary = f"""
+Current CFPB Complaint Data:
+- Total complaints: {data_context.get('total_complaints', 'N/A'):,}
+- Companies analyzed: {data_context.get('companies_count', 'N/A'):,}
+- Product categories: {data_context.get('products_count', 'N/A')}
+- Date range: {data_context.get('date_range', 'N/A')}
+- Top categories: {data_context.get('top_products', {})}
+- AI complaints: {data_context.get('special_categories', {}).get('ai_complaints', 'N/A')}
+- LEP complaints: {data_context.get('special_categories', {}).get('lep_complaints', 'N/A')}
+- Fraud complaints: {data_context.get('special_categories', {}).get('fraud_complaints', 'N/A')}
+
+User Question: {prompt}
+"""
         
-        Current dataset summary:
-        - Total complaints: {data_context.get('total_complaints', 'N/A'):,}
-        - Companies analyzed: {data_context.get('companies_count', 'N/A'):,}
-        - Product categories: {data_context.get('products_count', 'N/A')}
-        - Date range: {data_context.get('date_range', 'N/A')}
-        - Data source: {data_context.get('data_source', 'Official CFPB Database')}
-        
-        Top complaint categories: {data_context.get('top_products', {})}
-        
-        Special categories:
-        - AI/Algorithm related: {data_context.get('special_categories', {}).get('ai_complaints', 'N/A')} complaints
-        - Limited English Proficiency: {data_context.get('special_categories', {}).get('lep_complaints', 'N/A')} complaints  
-        - Digital Fraud: {data_context.get('special_categories', {}).get('fraud_complaints', 'N/A')} complaints
-        
-        Answer questions about this data with specific insights, trends, and actionable recommendations. Always mention that this is real CFPB data and can be verified on CFPB.gov.
-        """
-        
-        # Generate response
-        response = client.chat.completions.create(
-            model=model,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": prompt}
-            ],
-            max_tokens=1000,
-            temperature=0.7
+        # Use the OpenAI Prompt Agent (responses.create)
+        response = client.responses.create(
+            prompt={
+                "id": "pmpt_692fb1af32cc819584e19ea9f9d01bc008b4ef051b7d2ece",
+                "version": "1"
+            },
+            input={
+                "context": context_summary,
+                "question": prompt
+            },
+            max_tokens=1000
         )
         
-        return response.choices[0].message.content
+        # Extract response from the agent
+        if hasattr(response, 'output'):
+            return response.output
+        elif hasattr(response, 'text'):
+            return response.text
+        elif hasattr(response, 'content'):
+            return response.content
+        else:
+            return str(response)
         
     except Exception as e:
         return f"❌ Error generating AI response: {str(e)}. Please check your API key and try again."
