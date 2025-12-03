@@ -625,7 +625,7 @@ def show_basic_fallback_dashboard(data, analyzer):
             yaxis_title="Number of Complaints",
             height=500
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True, config={"staticPlot": True, "displayModeBar": False})
 
 # Filtering function removed - using all real CFPB data without filtering
 
@@ -658,7 +658,7 @@ def show_trends_charts(data):
             color_continuous_scale='viridis'
         )
         fig.update_layout(height=500, yaxis={'categoryorder': 'total ascending'})
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True, config={"staticPlot": True, "displayModeBar": False})
     
     with col2:
         st.markdown("### 📊 Distribution Pie Chart")
@@ -670,7 +670,7 @@ def show_trends_charts(data):
             title="Complaint Distribution (Top 8)"
         )
         fig.update_traces(textposition='inside', textinfo='percent+label')
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True, config={"staticPlot": True, "displayModeBar": False})
     
     # Sub-trends analysis
     st.markdown("### 🔍 Sub-Trend Analysis")
@@ -701,7 +701,7 @@ def show_trends_charts(data):
                     color_continuous_scale='plasma'
                 )
                 fig.update_layout(height=400, yaxis={'categoryorder': 'total ascending'})
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, use_container_width=True, config={"staticPlot": True, "displayModeBar": False})
             
             with col2:
                 fig = px.treemap(
@@ -710,7 +710,7 @@ def show_trends_charts(data):
                     names='Issue',
                     title=f"Issue Breakdown - {selected_product}"
                 )
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, use_container_width=True, config={"staticPlot": True, "displayModeBar": False})
     
     # Consumer Complaint Trend Analytics Section
     st.markdown("---")
@@ -862,7 +862,7 @@ def show_companies_charts(data):
             showlegend=False,
             margin=dict(l=20, r=20, t=40, b=20)
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True, config={"staticPlot": True, "displayModeBar": False})
     
     with col2:
         # Add spacing to align table with first data row on chart
@@ -922,7 +922,7 @@ def show_companies_charts(data):
             showlegend=True,
             legend=dict(orientation="v", yanchor="middle", y=0.5, xanchor="left", x=1.02)
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True, config={"staticPlot": True, "displayModeBar": False})
     
     with col2:
         st.markdown("#### 📊 Complaint Volume by Company")
@@ -936,7 +936,7 @@ def show_companies_charts(data):
         )
         fig.update_layout(height=400)
         fig.update_traces(textposition='middle center', textfont_size=12)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True, config={"staticPlot": True, "displayModeBar": False})
     
     # Summary stats row
     st.markdown("---")
@@ -1244,7 +1244,7 @@ def show_deep_dive_analysis(data, analyzer):
                 markers=True
             )
             fig.update_layout(height=400)
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, use_container_width=True, config={"staticPlot": True, "displayModeBar": False})
     
     with col2:
         st.markdown("#### 🗺️ Complaints by State")
@@ -1262,7 +1262,7 @@ def show_deep_dive_analysis(data, analyzer):
                 color_continuous_scale='blues'
             )
             fig.update_layout(height=400)
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, use_container_width=True, config={"staticPlot": True, "displayModeBar": False})
     
     # Correlation analysis
     st.markdown("#### 🔗 Response Analysis")
@@ -1277,7 +1277,7 @@ def show_deep_dive_analysis(data, analyzer):
             names='Response Type',
             title="Company Response Distribution"
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True, config={"staticPlot": True, "displayModeBar": False})
     
     # Export options
     st.markdown("### 📤 Export Options")
@@ -1686,3 +1686,4 @@ def add_footer():
 
 if __name__ == "__main__":
     main()
+
