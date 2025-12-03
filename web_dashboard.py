@@ -5,6 +5,7 @@ Updated: Demo expiration removed - Full version active
 """
 
 import streamlit as st
+import hashlib
 from functools import lru_cache
 import pandas as pd
 import plotly.express as px
@@ -16,6 +17,29 @@ from datetime import datetime, timedelta
 import json
 import io
 import base64
+
+# Password protection
+PASS = hashlib.md5("judgejudy503".encode()).hexdigest()
+
+def check_password():
+    if "auth" not in st.session_state:
+        st.session_state.auth = False
+    
+    if not st.session_state.auth:
+        st.markdown("# 🔒 CFPB Dashboard - Login Required")
+        st.markdown("---")
+        pwd = st.text_input("Enter Password", type="password", key="password_input")
+        if st.button("Login", type="primary"):
+            if hashlib.md5(pwd.encode()).hexdigest() == PASS:
+                st.session_state.auth = True
+                st.rerun()
+            else:
+                st.error("❌ Incorrect password. Please try again.")
+        st.stop()
+    return True
+
+# Password check - MUST BE FIRST
+check_password()
 
 # OpenAI imports for chat interface
 try:
